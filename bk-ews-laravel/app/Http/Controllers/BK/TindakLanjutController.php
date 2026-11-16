@@ -7,6 +7,7 @@ use App\Models\Siswa;
 use App\Models\TindakLanjutBk;
 use App\Models\HasilPrediksiEws;
 use App\Models\LogWhatsapp;
+use App\Models\PengaturanSistem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -106,10 +107,13 @@ class TindakLanjutController extends Controller
         $statusKirim = 'Gagal';
         $responseApi = null;
 
+        // Ambil token dari Pengaturan Sistem (fallback ke config)
+        $waToken = PengaturanSistem::get('wa_gateway_token', config('services.fonnte.token', ''));
+
         try {
             $response = Http::timeout(10)
-                ->withHeaders(['Authorization' => config('services.fonnte.token')])
-                ->post(config('services.fonnte.url'), [
+                ->withHeaders(['Authorization' => $waToken])
+                ->post(config('services.fonnte.url', 'https://api.fonnte.com/send'), [
                     'target'  => $siswa->no_wa_ortu,
                     'message' => $pesan,
                     'delay'   => 2,

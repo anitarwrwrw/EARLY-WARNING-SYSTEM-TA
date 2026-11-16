@@ -54,14 +54,25 @@ load_models()
 
 # ─── Konfigurasi Fitur ─────────────────────────────────────────────────────────
 FEATURE_COLUMNS = [
-    "rata_rata_nilai",
+    "rata_nilai",
     "tren_nilai",
     "jumlah_alpha",
-    "total_poin_pelanggaran",
+    "poin_pelanggaran",
     "skor_motivasi",
     "skor_keluarga",
     "skor_keamanan",
 ]
+
+# Pemetaan alias kolom dari input request
+FEATURE_ALIASES = {
+    "rata_nilai": ["rata_nilai", "rata_rata_nilai"],
+    "tren_nilai": ["tren_nilai"],
+    "jumlah_alpha": ["jumlah_alpha"],
+    "poin_pelanggaran": ["poin_pelanggaran", "total_poin_pelanggaran"],
+    "skor_motivasi": ["skor_motivasi"],
+    "skor_keluarga": ["skor_keluarga"],
+    "skor_keamanan": ["skor_keamanan"],
+}
 
 # Mapping label kelas dari integer ke string
 RISK_LABEL_MAP = {0: "Risiko Rendah", 1: "Risiko Sedang", 2: "Risiko Tinggi"}
@@ -93,15 +104,19 @@ def extract_pemicu_utama(row: dict, status_risiko: str, is_anomali: bool) -> str
     """
     triggers = []
 
-    # Aturan threshold sesuai konteks SMK
-    if row.get("tren_nilai", 0) <= -5:
-        triggers.append(f"Tren Nilai Turun ({row['tren_nilai']:+.1f})")
-    if row.get("jumlah_alpha", 0) >= 4:
-        triggers.append(f"Alpha Tinggi ({row['jumlah_alpha']} hari)")
-    if row.get("rata_rata_nilai", 100) < 70:
-        triggers.append(f"Nilai Rata-rata Rendah ({row['rata_rata_nilai']:.1f})")
-    if row.get("total_poin_pelanggaran", 0) >= 15:
-        triggers.append(f"Poin Pelanggaran Tinggi ({row['total_poin_pelanggaran']})")
+    tren_val = row.get("tren_nilai", 0)
+    alpha_val = row.get("jumlah_alpha", 0)
+    nilai_val = row.get("rata_nilai", row.get("rata_rata_nilai", 100))
+    poin_val = row.get("poin_pelanggaran", row.get("total_poin_pelanggaran", 0))
+
+    if tren_val <= -5:
+        triggers.append(f"Tren Nilai Turun ({tren_val:+.1f})")
+    if alpha_val >= 4:
+        triggers.append(f"Alpha Tinggi ({alpha_val} hari)")
+    if nilai_val < 70:
+        triggers.append(f"Nilai Rata-rata Rendah ({nilai_val:.1f})")
+    if poin_val >= 15:
+        triggers.append(f"Poin Pelanggaran Tinggi ({poin_val})")
     if row.get("skor_motivasi", 25) <= 12:
         triggers.append("Motivasi Belajar Rendah")
     if row.get("skor_keluarga", 25) <= 12:
@@ -177,8 +192,16 @@ def predict_ews():
     for siswa in data_siswa:
         siswa_id = siswa.get("siswa_id")
         try:
-            # Susun fitur dalam urutan yang benar
-            features = [siswa.get(col, 0) for col in FEATURE_COLUMNS]
+            # Susun fitur dalam urutan yang benar dengan dukungan alias
+            features = []
+            for col in FEATURE_COLUMNS:
+                val = 0
+                for alias in FEATURE_ALIASES.get(col, [col]):
+                    if alias in siswa:
+                        val = siswa[alias]
+                        break
+                features.append(float(val))
+
             X = np.array(features).reshape(1, -1)
 
             # --- Prediksi Random Forest ---
@@ -228,6 +251,7 @@ def predict_ews():
     return jsonify(response), 200
 
 
+@app.route("/health", methods=["GET"])
 @app.route("/api/health", methods=["GET"])
 def health():
     """Detail health check untuk monitoring."""

@@ -3,79 +3,82 @@
 namespace App\Imports;
 
 use App\Models\AkademikAbsensi;
+use App\Models\PeriodeSemester;
 use App\Models\Siswa;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithValidation;
 use Illuminate\Support\Collection;
 
 /**
- * Import data nilai & absensi dari Excel/CSV.
+ * Import data nilai & absensi dari Excel/CSV oleh Wali Kelas.
  *
- * Format kolom Excel yang diharapkan:
- *   nis | rata_rata_nilai | jumlah_alpha | jumlah_izin | jumlah_sakit
- *
- * Baris pertama adalah header (WithHeadingRow).
+ * Header kolom yang didukung:
+ *   nis | rata_nilai (atau rata_rata_nilai) | jumlah_alpha | jumlah_izin | jumlah_sakit
  */
-class AkademikAbsensiImport implements ToCollection, WithHeadingRow, WithValidation
+class AkademikAbsensiImport implements ToCollection, WithHeadingRow
 {
+    private int $importedCount = 0;
+    private int $updatedCount  = 0;
+
     public function __construct(
-        private readonly string $semester,
+        private readonly int $semesterId,
         private readonly int $inputOlehId,
     ) {}
 
     public function collection(Collection $rows): void
     {
+        // Cari semester sebelumnya untuk perhitungan tren nilai otomatis
+        $semSebelumnya = PeriodeSemester::where('id', '<', $this->semesterId)->latest('id')->first();
+
         foreach ($rows as $row) {
-            $nis    = trim($row['nis'] ?? '');
-            $siswa  = Siswa::where('nis', $nis)->where('is_active', true)->first();
+            $nis = trim((string)($row['nis'] ?? ''));
+            if (empty($nis)) continue;
 
-            if (! $siswa) continue; // Skip baris dengan NIS tidak ditemukan
+            $siswa = Siswa::where('nis', $nis)->where('is_active', true)->first();
+            if (! $siswa) continue; // Skip jika siswa tidak ditemukan
 
-            $nilaiSekarang  = (float) ($row['rata_rata_nilai'] ?? 0);
+            // Dukung 'rata_nilai' maupun 'rata_rata_nilai'
+            $nilaiSekarang = (float) ($row['rata_nilai'] ?? $row['rata_rata_nilai'] ?? 0);
 
-            // Hitung tren nilai
-            $nilaiSebelumnya = AkademikAbsensi::where('siswa_id', $siswa->id)
-                ->where('semester', $this->semesterSebelumnya())
-                ->value('rata_rata_nilai');
+            // Hitung tren nilai dari selisih semester ini vs semester lalu
+            $trenNilai = 0.0;
+            if ($semSebelumnya) {
+                $nilaiSebelumnya = AkademikAbsensi::where('siswa_id', $siswa->id)
+                    ->where('semester_id', $semSebelumnya->id)
+                    ->value('rata_nilai');
 
-            $trenNilai = $nilaiSebelumnya !== null
-                ? round($nilaiSekarang - $nilaiSebelumnya, 2)
-                : 0;
+                if ($nilaiSebelumnya !== null) {
+                    $trenNilai = round($nilaiSekarang - (float)$nilaiSebelumnya, 2);
+                }
+            }
 
-            AkademikAbsensi::updateOrCreate(
-                ['siswa_id' => $siswa->id, 'semester' => $this->semester],
+            $record = AkademikAbsensi::updateOrCreate(
+                ['siswa_id' => $siswa->id, 'semester_id' => $this->semesterId],
                 [
-                    'input_oleh'      => $this->inputOlehId,
-                    'rata_rata_nilai' => $nilaiSekarang,
-                    'tren_nilai'      => $trenNilai,
-                    'jumlah_alpha'    => (int) ($row['jumlah_alpha'] ?? 0),
-                    'jumlah_izin'     => (int) ($row['jumlah_izin'] ?? 0),
-                    'jumlah_sakit'    => (int) ($row['jumlah_sakit'] ?? 0),
+                    'input_oleh'   => $this->inputOlehId,
+                    'rata_nilai'   => $nilaiSekarang,
+                    'tren_nilai'   => $trenNilai,
+                    'jumlah_alpha' => (int) ($row['jumlah_alpha'] ?? 0),
+                    'jumlah_izin'  => (int) ($row['jumlah_izin'] ?? 0),
+                    'jumlah_sakit' => (int) ($row['jumlah_sakit'] ?? 0),
                 ]
             );
+
+            if ($record->wasRecentlyCreated) {
+                $this->importedCount++;
+            } else {
+                $this->updatedCount++;
+            }
         }
     }
 
-    public function rules(): array
+    public function getImportedCount(): int
     {
-        return [
-            'nis'             => 'required',
-            'rata_rata_nilai' => 'required|numeric|min:0|max:100',
-            'jumlah_alpha'    => 'required|integer|min:0',
-        ];
+        return $this->importedCount;
     }
 
-    private function semesterSebelumnya(): string
+    public function getUpdatedCount(): int
     {
-        [$jenis, $ta] = explode(' ', $this->semester, 2);
-        [$tahunMulai] = explode('/', $ta);
-        if ($jenis === 'Ganjil') {
-            $tahunSebelumnya = $tahunMulai - 1;
-            return "Genap {$tahunSebelumnya}/{$tahunMulai}";
-        } else {
-            return "Ganjil {$ta}";
-        }
+        return $this->updatedCount;
     }
 }
-
