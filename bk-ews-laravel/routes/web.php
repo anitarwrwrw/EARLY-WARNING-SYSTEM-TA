@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\KuesionerPublikController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\PeriodeSemesterController;
 use App\Http\Controllers\Admin\UserController;
@@ -15,6 +16,12 @@ use App\Http\Controllers\WaliKelas\WaliKelasController;
 
 // ─── Halaman Utama ─────────────────────────────────────────────────────────────
 Route::get('/', fn() => redirect()->route('login'));
+
+// ─── Kuesioner Siswa (Akses Publik Tanpa Login) ─────────────────────────────────
+Route::get('/kuesioner-siswa', [KuesionerPublikController::class, 'index'])->name('kuesioner.publik');
+Route::post('/kuesioner-siswa', [KuesionerPublikController::class, 'store'])->name('kuesioner.store');
+Route::get('/kuesioner-siswa/sukses', [KuesionerPublikController::class, 'sukses'])->name('kuesioner.sukses');
+Route::get('/api/siswa-by-kelas/{kelas}', [KuesionerPublikController::class, 'getSiswaByKelas'])->name('api.siswa-by-kelas');
 
 // ─── Auth Routes ───────────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
