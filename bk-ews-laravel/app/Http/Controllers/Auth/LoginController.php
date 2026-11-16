@@ -31,7 +31,7 @@ class LoginController extends Controller
             if (! $user->is_active) {
                 Auth::logout();
                 return back()->withErrors([
-                    'username' => 'Akun Anda tidak aktif. Hubungi administrator.',
+                    'username' => 'Akun Anda telah dinonaktifkan. Silakan hubungi Administrator.',
                 ]);
             }
 
@@ -43,13 +43,19 @@ class LoginController extends Controller
         ])->onlyInput('username');
     }
 
+    /**
+     * Redirect pengguna ke dashboard masing-masing sesuai 3 role terautentikasi:
+     * - admin
+     * - guru_bk
+     * - wali_kelas
+     */
     protected function redirectBasedOnRole($user)
     {
         return match ($user->role) {
-            'bk'          => redirect()->route('bk.dashboard'),
+            'admin'       => redirect()->route('admin.dashboard'),
+            'guru_bk'     => redirect()->route('bk.dashboard'),
             'wali_kelas'  => redirect()->route('wali.dashboard'),
-            'siswa'       => redirect()->route('siswa.kuesioner'),
-            default       => redirect('/'),
+            default       => tap(redirect()->route('login'), fn() => Auth::logout()),
         };
     }
 
@@ -61,4 +67,3 @@ class LoginController extends Controller
         return redirect()->route('login');
     }
 }
-

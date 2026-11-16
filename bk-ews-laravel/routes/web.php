@@ -2,11 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\PeriodeSemesterController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\KelasController;
+use App\Http\Controllers\Admin\SiswaController as AdminSiswaController;
+use App\Http\Controllers\Admin\PengaturanController;
 use App\Http\Controllers\BK\EwsController;
 use App\Http\Controllers\BK\MasterDataController;
 use App\Http\Controllers\BK\TindakLanjutController;
 use App\Http\Controllers\WaliKelas\WaliKelasController;
-use App\Http\Controllers\Siswa\KuesionerController;
 
 // ─── Halaman Utama ─────────────────────────────────────────────────────────────
 Route::get('/', fn() => redirect()->route('login'));
@@ -21,28 +26,74 @@ Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-// ─── GURU BK ───────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:bk'])->prefix('bk')->name('bk.')->group(function () {
+// ─── 1. ROLE ADMIN (OPERATOR SEKOLAH / TATA USAHA) ────────────────────────────
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+
+    // Dashboard
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+    // Manajemen Periode Semester
+    Route::prefix('periode')->name('periode.')->group(function () {
+        Route::get('/', [PeriodeSemesterController::class, 'index'])->name('index');
+        Route::post('/', [PeriodeSemesterController::class, 'store'])->name('store');
+        Route::post('/{periode}/aktif', [PeriodeSemesterController::class, 'setAktif'])->name('set-aktif');
+        Route::post('/{periode}/toggle-kuesioner', [PeriodeSemesterController::class, 'toggleKuesioner'])->name('toggle-kuesioner');
+        Route::delete('/{periode}', [PeriodeSemesterController::class, 'destroy'])->name('destroy');
+    });
+
+    // Manajemen Pengguna (Guru BK & Wali Kelas)
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::put('/{user}', [UserController::class, 'update'])->name('update');
+        Route::post('/{user}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+    });
+
+    // Manajemen Kelas
+    Route::prefix('kelas')->name('kelas.')->group(function () {
+        Route::get('/', [KelasController::class, 'index'])->name('index');
+        Route::post('/', [KelasController::class, 'store'])->name('store');
+        Route::put('/{kelas}', [KelasController::class, 'update'])->name('update');
+        Route::delete('/{kelas}', [KelasController::class, 'destroy'])->name('destroy');
+    });
+
+    // Manajemen Data Induk Siswa & Import Excel
+    Route::prefix('siswa')->name('siswa.')->group(function () {
+        Route::get('/', [AdminSiswaController::class, 'index'])->name('index');
+        Route::get('/create', [AdminSiswaController::class, 'create'])->name('create');
+        Route::post('/', [AdminSiswaController::class, 'store'])->name('store');
+        Route::get('/{siswa}/edit', [AdminSiswaController::class, 'edit'])->name('edit');
+        Route::put('/{siswa}', [AdminSiswaController::class, 'update'])->name('update');
+        Route::delete('/{siswa}', [AdminSiswaController::class, 'destroy'])->name('destroy');
+        Route::post('/import', [AdminSiswaController::class, 'importExcel'])->name('import');
+        Route::get('/template', [AdminSiswaController::class, 'unduhTemplate'])->name('template');
+    });
+
+    // Pengaturan Sistem (Flask URL & WhatsApp Gateway)
+    Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
+        Route::get('/', [PengaturanController::class, 'index'])->name('index');
+        Route::post('/', [PengaturanController::class, 'update'])->name('update');
+        Route::post('/test-flask', [PengaturanController::class, 'testFlask'])->name('test-flask');
+        Route::post('/test-wa', [PengaturanController::class, 'testWhatsapp'])->name('test-wa');
+    });
+});
+
+// ─── 2. ROLE GURU BK ──────────────────────────────────────────────────────────
+Route::middleware(['auth', 'role:guru_bk'])->prefix('bk')->name('bk.')->group(function () {
 
     // Dashboard EWS
     Route::get('/dashboard', [EwsController::class, 'dashboard'])->name('dashboard');
     Route::post('/ews/jalankan', [EwsController::class, 'jalankanAnalisis'])->name('ews.jalankan');
     Route::get('/ews/siswa/{siswa}', [EwsController::class, 'detailSiswa'])->name('ews.detail-siswa');
 
-    // Manajemen Data Master - Siswa
+    // Master Data (Read-only Siswa & Kelas, Full CRUD Pelanggaran)
     Route::prefix('master')->name('master.')->group(function () {
         Route::get('/siswa', [MasterDataController::class, 'indexSiswa'])->name('siswa.index');
-        Route::get('/siswa/tambah', [MasterDataController::class, 'createSiswa'])->name('siswa.create');
-        Route::post('/siswa', [MasterDataController::class, 'storeSiswa'])->name('siswa.store');
-        Route::get('/siswa/{siswa}/edit', [MasterDataController::class, 'editSiswa'])->name('siswa.edit');
-        Route::put('/siswa/{siswa}', [MasterDataController::class, 'updateSiswa'])->name('siswa.update');
-        Route::delete('/siswa/{siswa}', [MasterDataController::class, 'destroySiswa'])->name('siswa.destroy');
-
-        // Kelas
+        Route::get('/siswa/{siswa}', [EwsController::class, 'detailSiswa'])->name('siswa.detail');
         Route::get('/kelas', [MasterDataController::class, 'indexKelas'])->name('kelas.index');
-        Route::post('/kelas', [MasterDataController::class, 'storeKelas'])->name('kelas.store');
 
-        // Pelanggaran
+        // Pelanggaran & Kategori
         Route::get('/pelanggaran', [MasterDataController::class, 'indexPelanggaran'])->name('pelanggaran.index');
         Route::post('/pelanggaran', [MasterDataController::class, 'storePelanggaran'])->name('pelanggaran.store');
         Route::delete('/pelanggaran/{pelanggaran}', [MasterDataController::class, 'destroyPelanggaran'])->name('pelanggaran.destroy');
@@ -61,17 +112,11 @@ Route::middleware(['auth', 'role:bk'])->prefix('bk')->name('bk.')->group(functio
     Route::post('/whatsapp/kirim', [TindakLanjutController::class, 'kirimWhatsapp'])->name('whatsapp.kirim');
 });
 
-// ─── WALI KELAS ────────────────────────────────────────────────────────────────
+// ─── 3. ROLE WALI KELAS ───────────────────────────────────────────────────────
 Route::middleware(['auth', 'role:wali_kelas'])->prefix('wali')->name('wali.')->group(function () {
     Route::get('/dashboard', [WaliKelasController::class, 'dashboard'])->name('dashboard');
     Route::get('/input-nilai', [WaliKelasController::class, 'inputNilai'])->name('input-nilai');
     Route::get('/template-excel', [WaliKelasController::class, 'unduhTemplate'])->name('template-excel');
     Route::post('/simpan-nilai', [WaliKelasController::class, 'simpanNilai'])->name('simpan-nilai');
     Route::post('/import-excel', [WaliKelasController::class, 'importExcel'])->name('import-excel');
-});
-
-// ─── SISWA ─────────────────────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
-    Route::get('/kuesioner', [KuesionerController::class, 'index'])->name('kuesioner');
-    Route::post('/kuesioner', [KuesionerController::class, 'store'])->name('kuesioner.store');
 });

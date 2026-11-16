@@ -9,11 +9,16 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Middleware untuk membatasi akses berdasarkan role pengguna.
  *
+ * Role yang didukung:
+ * - admin       (Operator / Tata Usaha)
+ * - guru_bk     (Guru Bimbingan Konseling)
+ * - wali_kelas  (Wali Kelas)
+ *
  * Penggunaan di routes:
- *   ->middleware('role:bk')
+ *   ->middleware('role:admin')
+ *   ->middleware('role:guru_bk')
  *   ->middleware('role:wali_kelas')
- *   ->middleware('role:siswa')
- *   ->middleware('role:bk,wali_kelas')  ← multiple roles
+ *   ->middleware('role:admin,guru_bk')  ← multiple roles
  */
 class RoleMiddleware
 {
@@ -24,10 +29,9 @@ class RoleMiddleware
         }
 
         if (! in_array($request->user()->role, $roles)) {
-            abort(403, 'Anda tidak memiliki izin untuk mengakses halaman ini.');
+            abort(403, 'Akses Ditolak: Anda tidak memiliki izin untuk mengakses halaman ini.');
         }
 
         return $next($request);
     }
 }
-
