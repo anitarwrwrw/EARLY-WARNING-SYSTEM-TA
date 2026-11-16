@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('siswa', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->nullable()->unique();
-            $table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
+            // NISN sebagai identitas unik untuk verifikasi kuesioner publik (tanpa login)
+            $table->string('nisn', 20)->nullable()->unique();
             $table->unsignedBigInteger('kelas_id');
             $table->foreign('kelas_id')->references('id')->on('kelas');
             $table->string('nis', 20)->unique();

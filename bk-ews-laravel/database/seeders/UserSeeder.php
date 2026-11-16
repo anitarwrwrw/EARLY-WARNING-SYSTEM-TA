@@ -2,38 +2,65 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class UserSeeder extends Seeder
 {
+    /**
+     * Seed akun-akun pengguna sesuai 3 role baru:
+     * admin, guru_bk, wali_kelas
+     */
     public function run(): void
     {
-        // Guru BK
-        User::create([
-            'name'     => 'Guru BK - SMK Sunan Ampel',
-            'username' => 'gurubk',
-            'email'    => 'bk@smksunampel.sch.id',
-            'password' => Hash::make('password'),
-            'role'     => 'bk',
-        ]);
-
-        // Wali Kelas
-        $waliKelas = [
-            ['name' => 'Budi Santoso, S.Pd.',    'username' => 'wali_xi_tkj1'],
-            ['name' => 'Siti Rahayu, S.Pd.',     'username' => 'wali_xi_rpl1'],
-            ['name' => 'Ahmad Fauzi, S.T.',       'username' => 'wali_xii_tkj1'],
+        $users = [
+            [
+                'name'      => 'Administrator',
+                'username'  => 'admin',
+                'email'     => 'admin@smksunanampel.sch.id',
+                'password'  => Hash::make('password'),
+                'role'      => 'admin',
+                'is_active' => true,
+            ],
+            [
+                'name'      => 'Guru BK Utama',
+                'username'  => 'gurubk',
+                'email'     => 'gurubk@smksunanampel.sch.id',
+                'password'  => Hash::make('password'),
+                'role'      => 'guru_bk',
+                'is_active' => true,
+            ],
+            [
+                'name'      => 'Wali Kelas XI TKJ 1',
+                'username'  => 'wali_xi_tkj1',
+                'email'     => 'wali_xi_tkj1@smksunanampel.sch.id',
+                'password'  => Hash::make('password'),
+                'role'      => 'wali_kelas',
+                'is_active' => true,
+            ],
+            [
+                'name'      => 'Wali Kelas XI TKJ 2',
+                'username'  => 'wali_xi_tkj2',
+                'email'     => 'wali_xi_tkj2@smksunanampel.sch.id',
+                'password'  => Hash::make('password'),
+                'role'      => 'wali_kelas',
+                'is_active' => true,
+            ],
+            [
+                'name'      => 'Wali Kelas XII TKJ 1',
+                'username'  => 'wali_xii_tkj1',
+                'email'     => 'wali_xii_tkj1@smksunanampel.sch.id',
+                'password'  => Hash::make('password'),
+                'role'      => 'wali_kelas',
+                'is_active' => true,
+            ],
         ];
 
-        foreach ($waliKelas as $wk) {
-            User::create([
-                'name'     => $wk['name'],
-                'username' => $wk['username'],
-                'password' => Hash::make('password'),
-                'role'     => 'wali_kelas',
-            ]);
+        foreach ($users as $userData) {
+            User::create($userData);
         }
+
+        $this->command->info('✅ UserSeeder: ' . count($users) . ' akun berhasil dibuat.');
     }
 }
-

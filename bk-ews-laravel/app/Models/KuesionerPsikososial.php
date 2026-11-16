@@ -10,7 +10,7 @@ class KuesionerPsikososial extends Model
     protected $table = 'kuesioner_psikososial';
 
     protected $fillable = [
-        'siswa_id', 'semester',
+        'siswa_id', 'semester_id',
         'skor_motivasi', 'skor_keluarga', 'skor_keamanan',
         'jawaban_raw', 'tanggal_isi',
     ];
@@ -18,18 +18,27 @@ class KuesionerPsikososial extends Model
     protected function casts(): array
     {
         return [
-            'jawaban_raw'  => 'array',
-            'tanggal_isi'  => 'datetime',
+            'jawaban_raw' => 'array',
+            'tanggal_isi' => 'datetime',
         ];
     }
+
+    // ─── Relasi ─────────────────────────────────────────────────────────────────
 
     public function siswa(): BelongsTo
     {
         return $this->belongsTo(Siswa::class, 'siswa_id');
     }
 
+    public function semester(): BelongsTo
+    {
+        return $this->belongsTo(PeriodeSemester::class, 'semester_id');
+    }
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────────
+
     /**
-     * Hitung skor total dari jawaban mentah.
+     * Hitung skor tiap aspek dari jawaban mentah (15 butir Likert 1-5).
      * Butir ke-3 tiap aspek adalah reverse scoring (6 - jawaban).
      * Susunan: [mot1..mot5, kel1..kel5, aman1..aman5]
      */
@@ -50,4 +59,3 @@ class KuesionerPsikososial extends Model
         ];
     }
 }
-

@@ -6,6 +6,9 @@ use App\Models\Siswa;
 use App\Models\AkademikAbsensi;
 use App\Models\KuesionerPsikososial;
 use App\Models\Pelanggaran;
+use App\Models\KategoriPelanggaran;
+use App\Models\PeriodeSemester;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 /**
@@ -16,9 +19,14 @@ class DataDummySeeder extends Seeder
 {
     public function run(): void
     {
-        $siswa      = Siswa::all();
-        $semester   = 'Ganjil 2026/2027';
-        $semLalu    = 'Genap 2025/2026';
+        $siswa = Siswa::all();
+        $semAktif = PeriodeSemester::where('is_aktif', true)->first();
+        $semLalu = PeriodeSemester::where('is_aktif', false)->latest('id')->first();
+
+        if (!$semAktif) {
+            $this->command->error('Periode semester aktif tidak ditemukan!');
+            return;
+        }
 
         $profil = [
             // [rata_nilai_lalu, rata_nilai_skrg, alpha, izin, sakit, poin_pelanggaran, mot, kel, aman]
@@ -44,42 +52,45 @@ class DataDummySeeder extends Seeder
             [87.0, 86.0, 1, 0, 0,  0, 21, 20, 23],
         ];
 
-        $bk = \App\Models\User::where('role', 'bk')->first();
+        $guruBk = User::where('role', 'guru_bk')->first();
+        $kategoriList = KategoriPelanggaran::all();
 
         foreach ($siswa as $index => $s) {
             $p = $profil[$index % count($profil)];
 
             [$nilaiLalu, $nilaiSkrg, $alpha, $izin, $sakit, $poinPelanggaran, $mot, $kel, $aman] = $p;
 
-            // Akademik semester lalu
+            // Akademik semester lalu (jika ada semester lalu)
+            if ($semLalu) {
+                AkademikAbsensi::firstOrCreate(
+                    ['siswa_id' => $s->id, 'semester_id' => $semLalu->id],
+                    [
+                        'input_oleh'   => null,
+                        'rata_nilai'   => $nilaiLalu,
+                        'tren_nilai'   => 0,
+                        'jumlah_alpha' => rand(0, 2),
+                        'jumlah_izin'  => rand(0, 2),
+                        'jumlah_sakit' => rand(0, 1),
+                    ]
+                );
+            }
+
+            // Akademik semester aktif berjalan
             AkademikAbsensi::firstOrCreate(
-                ['siswa_id' => $s->id, 'semester' => $semLalu],
+                ['siswa_id' => $s->id, 'semester_id' => $semAktif->id],
                 [
-                    'input_oleh'      => null,
-                    'rata_rata_nilai' => $nilaiLalu,
-                    'tren_nilai'      => 0,
-                    'jumlah_alpha'    => rand(0, 2),
-                    'jumlah_izin'     => rand(0, 2),
-                    'jumlah_sakit'    => rand(0, 1),
+                    'input_oleh'   => null,
+                    'rata_nilai'   => $nilaiSkrg,
+                    'tren_nilai'   => round($nilaiSkrg - $nilaiLalu, 2),
+                    'jumlah_alpha' => $alpha,
+                    'jumlah_izin'  => $izin,
+                    'jumlah_sakit' => $sakit,
                 ]
             );
 
-            // Akademik semester ini
-            AkademikAbsensi::firstOrCreate(
-                ['siswa_id' => $s->id, 'semester' => $semester],
-                [
-                    'input_oleh'      => null,
-                    'rata_rata_nilai' => $nilaiSkrg,
-                    'tren_nilai'      => round($nilaiSkrg - $nilaiLalu, 2),
-                    'jumlah_alpha'    => $alpha,
-                    'jumlah_izin'     => $izin,
-                    'jumlah_sakit'    => $sakit,
-                ]
-            );
-
-            // Kuesioner psikososial
+            // Kuesioner psikososial semester aktif
             KuesionerPsikososial::firstOrCreate(
-                ['siswa_id' => $s->id, 'semester' => $semester],
+                ['siswa_id' => $s->id, 'semester_id' => $semAktif->id],
                 [
                     'skor_motivasi' => $mot,
                     'skor_keluarga' => $kel,
@@ -89,17 +100,22 @@ class DataDummySeeder extends Seeder
             );
 
             // Pelanggaran (hanya untuk yang punya poin)
-            if ($poinPelanggaran > 0 && $bk) {
+            if ($poinPelanggaran > 0 && $guruBk) {
+                // Pilih kategori yang mendekati poin atau acak
+                $kat = $kategoriList->where('bobot_poin', '<=', $poinPelanggaran)->first() ?? $kategoriList->first();
+
                 Pelanggaran::create([
-                    'siswa_id'          => $s->id,
-                    'dicatat_oleh'      => $bk->id,
-                    'tanggal'           => now()->subDays(rand(5, 30)),
-                    'jenis_pelanggaran' => 'Terlambat / Tidak hadir tanpa keterangan',
-                    'poin'              => $poinPelanggaran,
-                    'keterangan'        => 'Data demo untuk pengujian EWS',
+                    'siswa_id'                => $s->id,
+                    'dicatat_oleh'            => $guruBk->id,
+                    'kategori_pelanggaran_id' => $kat?->id,
+                    'tanggal'                 => now()->subDays(rand(5, 30)),
+                    'jenis_pelanggaran'       => $kat ? $kat->nama : 'Terlambat / Alpha',
+                    'poin'                    => $poinPelanggaran,
+                    'keterangan'              => 'Data demo untuk pengujian EWS',
                 ]);
             }
         }
+
+        $this->command->info('✅ DataDummySeeder: Data akademik, kuesioner, dan pelanggaran dummy berhasil di-seed.');
     }
 }
-

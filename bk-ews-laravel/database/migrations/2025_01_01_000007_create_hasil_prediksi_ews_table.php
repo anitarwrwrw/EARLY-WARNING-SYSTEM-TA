@@ -12,7 +12,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('siswa_id');
             $table->foreign('siswa_id')->references('id')->on('siswa')->cascadeOnDelete();
-            $table->string('semester');
+            // Referensi ke periode semester aktif
+            $table->unsignedBigInteger('semester_id');
+            $table->foreign('semester_id')->references('id')->on('periode_semester');
             $table->timestamp('tanggal_analisis')->useCurrent();
             $table->unsignedBigInteger('dianalisis_oleh')->nullable();
             $table->foreign('dianalisis_oleh')->references('id')->on('users')->nullOnDelete();

@@ -10,22 +10,30 @@ class AkademikAbsensi extends Model
     protected $table = 'akademik_absensi';
 
     protected $fillable = [
-        'siswa_id', 'semester', 'input_oleh',
-        'rata_rata_nilai', 'tren_nilai',
+        'siswa_id', 'semester_id', 'input_oleh',
+        'rata_nilai',   // Nama sesuai blueprint (bukan rata_rata_nilai)
+        'tren_nilai',
         'jumlah_alpha', 'jumlah_izin', 'jumlah_sakit',
     ];
 
     protected function casts(): array
     {
         return [
-            'rata_rata_nilai' => 'float',
-            'tren_nilai'      => 'float',
+            'rata_nilai' => 'float',
+            'tren_nilai' => 'float',
         ];
     }
+
+    // ─── Relasi ─────────────────────────────────────────────────────────────────
 
     public function siswa(): BelongsTo
     {
         return $this->belongsTo(Siswa::class, 'siswa_id');
+    }
+
+    public function semester(): BelongsTo
+    {
+        return $this->belongsTo(PeriodeSemester::class, 'semester_id');
     }
 
     public function inputOleh(): BelongsTo
@@ -33,4 +41,3 @@ class AkademikAbsensi extends Model
         return $this->belongsTo(User::class, 'input_oleh');
     }
 }
-

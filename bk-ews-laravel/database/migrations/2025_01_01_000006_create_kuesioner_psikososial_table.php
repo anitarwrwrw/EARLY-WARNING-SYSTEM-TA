@@ -12,7 +12,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('siswa_id');
             $table->foreign('siswa_id')->references('id')->on('siswa')->cascadeOnDelete();
-            $table->string('semester');
+            // Referensi ke periode semester aktif
+            $table->unsignedBigInteger('semester_id');
+            $table->foreign('semester_id')->references('id')->on('periode_semester');
             $table->unsignedTinyInteger('skor_motivasi')->default(0);   // 5 - 25
             $table->unsignedTinyInteger('skor_keluarga')->default(0);   // 5 - 25
             $table->unsignedTinyInteger('skor_keamanan')->default(0);   // 5 - 25
@@ -21,7 +23,7 @@ return new class extends Migration
             $table->timestamp('tanggal_isi')->nullable();
             $table->timestamps();
 
-            $table->unique(['siswa_id', 'semester']);
+            $table->unique(['siswa_id', 'semester_id']); // Anti-dobel pengisian per semester
         });
     }
 
