@@ -19,7 +19,7 @@
             <div class="col-md-6">
                 <select name="siswa_id" class="form-select form-select-sm" onchange="this.form.submit()">
                     <option value="">Semua Siswa</option>
-                    @foreach($siswa as $s)
+                    @foreach($siswaList as $s)
                         <option value="{{ $s->id }}" {{ request('siswa_id') == $s->id ? 'selected' : '' }}>
                             {{ $s->nama_lengkap }} ({{ $s->nis }}) - {{ $s->kelas->tingkat ?? '' }} {{ $s->kelas->nama_kelas ?? '' }}
                         </option>
@@ -73,7 +73,12 @@
                         </td>
                         <td><small>{{ $p->siswa->kelas->tingkat ?? '' }} {{ $p->siswa->kelas->nama_kelas ?? '-' }}</small></td>
                         <td>
-                            <div>{{ $p->jenis_pelanggaran }}</div>
+                            <div>
+                                {{ $p->jenis_pelanggaran }}
+                                @if($p->kategori)
+                                    <span class="badge bg-light text-dark border ms-1">{{ $p->kategori->kategori }}</span>
+                                @endif
+                            </div>
                             @if($p->keterangan)
                                 <small class="text-muted fst-italic">{{ $p->keterangan }}</small>
                             @endif
@@ -122,27 +127,27 @@
                     <label class="form-label fw-medium">Nama Siswa <span class="text-danger">*</span></label>
                     <select name="siswa_id" class="form-select" required>
                         <option value="">-- Pilih Siswa --</option>
-                        @foreach($siswa as $s)
+                        @foreach($siswaList as $s)
                             <option value="{{ $s->id }}" {{ old('siswa_id', request('siswa_id')) == $s->id ? 'selected' : '' }}>
                                 {{ $s->nama_lengkap }} ({{ $s->nis }}) - {{ $s->kelas->tingkat ?? '' }} {{ $s->kelas->nama_kelas ?? '' }}
                             </option>
                         @endforeach
                     </select>
                 </div>
-                <div class="row g-2 mb-3">
-                    <div class="col-7">
-                        <label class="form-label fw-medium">Tanggal Kejadian <span class="text-danger">*</span></label>
-                        <input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}" required>
-                    </div>
-                    <div class="col-5">
-                        <label class="form-label fw-medium">Bobot Poin <span class="text-danger">*</span></label>
-                        <input type="number" name="poin" class="form-control" placeholder="Contoh: 10" min="1" max="100" required>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Tanggal Kejadian <span class="text-danger">*</span></label>
+                    <input type="date" name="tanggal" class="form-control" value="{{ date('Y-m-d') }}" max="{{ date('Y-m-d') }}" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-medium">Jenis Pelanggaran <span class="text-danger">*</span></label>
-                    <input type="text" name="jenis_pelanggaran" class="form-control"
-                           placeholder="Contoh: Terlambat, Merokok di area sekolah, Membolos jam ke-4" required>
+                    <label class="form-label fw-medium">Kategori & Jenis Pelanggaran <span class="text-danger">*</span></label>
+                    <select name="kategori_pelanggaran_id" class="form-select" required>
+                        <option value="">-- Pilih Jenis Pelanggaran --</option>
+                        @foreach($kategoriList as $kat)
+                            <option value="{{ $kat->id }}">
+                                [{{ $kat->kategori }}] {{ $kat->nama }} (+{{ $kat->bobot_poin }} poin)
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-medium">Keterangan / Kronologi Singkat</label>

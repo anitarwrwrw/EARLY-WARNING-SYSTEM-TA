@@ -4,12 +4,9 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h4 class="fw-bold mb-0">Manajemen Data Siswa</h4>
-        <small class="text-muted">Kelola data siswa SMK Sunan Ampel</small>
+        <h4 class="fw-bold mb-0">Daftar Data Siswa</h4>
+        <small class="text-muted">Data induk siswa SMK Sunan Ampel (Read-Only — dikelola Admin)</small>
     </div>
-    <a href="{{ route('bk.master.siswa.create') }}" class="btn btn-primary btn-sm">
-        <i class="bi bi-person-plus me-1"></i>Tambah Siswa
-    </a>
 </div>
 
 {{-- Filter & Pencarian --}}
@@ -89,22 +86,9 @@
                             @endif
                         </td>
                         <td class="text-end">
-                            <div class="btn-group btn-group-sm">
-                                <a href="{{ route('bk.ews.detail-siswa', $s->id) }}" class="btn btn-outline-info" title="Detail & Riwayat EWS">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="{{ route('bk.master.siswa.edit', $s->id) }}" class="btn btn-outline-primary" title="Edit Siswa">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form method="POST" action="{{ route('bk.master.siswa.destroy', $s->id) }}" class="d-inline"
-                                      onsubmit="return confirm('Apakah Anda yakin ingin menonaktifkan siswa {{ $s->nama_lengkap }}?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger" title="Hapus/Nonaktifkan">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
+                            <a href="{{ route('bk.ews.detail-siswa', $s->id) }}" class="btn btn-sm btn-outline-info" title="Detail & Riwayat EWS">
+                                <i class="bi bi-eye me-1"></i>Detail EWS
+                            </a>
                         </td>
                     </tr>
                 @endforeach

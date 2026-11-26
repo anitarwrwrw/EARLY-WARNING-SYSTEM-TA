@@ -1,4 +1,4 @@
-View [bk.pelanggaran.index] not found.@extends('layouts.app')
+@extends('layouts.app')
 @section('page-title', 'Detail & Tren Perkembangan Siswa')
 
 @section('content')
@@ -130,7 +130,7 @@ View [bk.pelanggaran.index] not found.@extends('layouts.app')
                 <tbody>
                 @foreach($riwayatEws as $rews)
                     <tr>
-                        <td class="fw-medium">{{ $rews->semester }}</td>
+                        <td class="fw-medium">{{ $rews->semester?->nama_semester ?? '-' }}</td>
                         <td><small>{{ $rews->tanggal_analisis?->isoFormat('D MMM Y, HH:mm') ?? '-' }}</small></td>
                         <td>
                             <span class="badge rounded-pill
@@ -186,8 +186,8 @@ View [bk.pelanggaran.index] not found.@extends('layouts.app')
                 <tbody>
                 @foreach($riwayatAkademik as $ra)
                     <tr>
-                        <td class="fw-medium">{{ $ra->semester }}</td>
-                        <td><span class="fw-bold">{{ number_format($ra->rata_rata_nilai, 1) }}</span></td>
+                        <td class="fw-medium">{{ $ra->semester?->nama_semester ?? '-' }}</td>
+                        <td><span class="fw-bold">{{ number_format($ra->rata_nilai, 1) }}</span></td>
                         <td>
                             <span class="badge {{ $ra->tren_nilai >= 0 ? 'bg-success' : 'bg-danger' }}">
                                 {{ $ra->tren_nilai >= 0 ? '+' : '' }}{{ number_format($ra->tren_nilai, 1) }}
@@ -256,7 +256,7 @@ View [bk.pelanggaran.index] not found.@extends('layouts.app')
 @push('scripts')
 <script>
     const labels = {!! json_encode($chartData['labels']) !!};
-    const nilaiData = {!! json_encode($chartData['rata_rata_nilai']) !!};
+    const nilaiData = {!! json_encode($chartData['rata_nilai']) !!};
     const prioritasData = {!! json_encode($chartData['level_prioritas']) !!};
 
     const ctx = document.getElementById('chartTrenSiswa').getContext('2d');

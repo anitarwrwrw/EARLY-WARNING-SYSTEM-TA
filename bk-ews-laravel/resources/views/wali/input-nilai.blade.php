@@ -18,10 +18,12 @@
 <div class="card shadow-sm mb-4">
     <div class="card-body py-2">
         <form method="GET" class="d-flex align-items-center gap-3">
-            <label class="fw-medium mb-0">Semester:</label>
-            <select name="semester" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
-                @foreach(['Ganjil 2026/2027','Genap 2025/2026','Ganjil 2025/2026'] as $sem)
-                    <option value="{{ $sem }}" {{ $sem === $semester ? 'selected' : '' }}>{{ $sem }}</option>
+            <label class="fw-medium mb-0">Periode Semester:</label>
+            <select name="semester_id" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                @foreach($semuaPeriode as $sem)
+                    <option value="{{ $sem->id }}" {{ $periode && $sem->id === $periode->id ? 'selected' : '' }}>
+                        {{ $sem->nama_semester }} {{ $sem->is_aktif ? '(Aktif)' : '' }}
+                    </option>
                 @endforeach
             </select>
         </form>
@@ -31,9 +33,12 @@
 {{-- Tabel Input per Siswa --}}
 <div class="card shadow-sm">
     <div class="card-header bg-transparent border-0 fw-semibold">
-        <i class="bi bi-pencil-square me-2 text-primary"></i>Input Nilai & Absensi Per Siswa
+        <i class="bi bi-pencil-square me-2 text-primary"></i>Input Nilai & Absensi Per Siswa ({{ $periode?->nama_semester ?? '-' }})
     </div>
     <div class="card-body p-0">
+        @if(!$periode)
+            <div class="text-center py-4 text-muted">Belum ada periode semester aktif. Hubungi Admin.</div>
+        @else
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -48,7 +53,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                @foreach($siswa as $s)
+                @foreach($siswaList as $s)
                 @php $ak = $s->akademikAbsensi->first(); @endphp
                 <tr>
                     <td>
@@ -58,9 +63,9 @@
                     <form method="POST" action="{{ route('wali.simpan-nilai') }}" class="contents">
                         @csrf
                         <input type="hidden" name="siswa_id" value="{{ $s->id }}">
-                        <input type="hidden" name="semester" value="{{ $semester }}">
-                        <td><input type="number" name="rata_rata_nilai" step="0.1" min="0" max="100"
-                                   class="form-control form-control-sm" value="{{ $ak->rata_rata_nilai ?? '' }}" required></td>
+                        <input type="hidden" name="semester_id" value="{{ $periode->id }}">
+                        <td><input type="number" name="rata_nilai" step="0.1" min="0" max="100"
+                                   class="form-control form-control-sm" value="{{ $ak->rata_nilai ?? '' }}" required></td>
                         <td><input type="number" name="jumlah_alpha" min="0"
                                    class="form-control form-control-sm" value="{{ $ak->jumlah_alpha ?? 0 }}" required></td>
                         <td><input type="number" name="jumlah_izin" min="0"
@@ -77,7 +82,7 @@
                             @endif
                         </td>
                         <td>
-                            <button type="submit" class="btn btn-primary btn-sm">
+                            <button type="submit" class="btn btn-primary btn-sm" title="Simpan">
                                 <i class="bi bi-save2"></i>
                             </button>
                         </td>
@@ -87,10 +92,12 @@
                 </tbody>
             </table>
         </div>
+        @endif
     </div>
 </div>
 
 {{-- Modal Import Excel --}}
+@if($periode)
 <div class="modal fade" id="modalImport" tabindex="-1">
     <div class="modal-dialog">
         <form method="POST" action="{{ route('wali.import-excel') }}" enctype="multipart/form-data" class="modal-content">
@@ -100,7 +107,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" name="semester" value="{{ $semester }}">
+                <input type="hidden" name="semester_id" value="{{ $periode->id }}">
                 <div class="mb-3">
                     <label class="form-label fw-medium">Pilih File</label>
                     <input type="file" name="file_excel" class="form-control" accept=".xlsx,.xls,.csv" required>
@@ -108,7 +115,7 @@
                 </div>
                 <div class="alert alert-info py-2 small">
                     <strong>Format kolom yang diharapkan:</strong><br>
-                    <code>nis | rata_rata_nilai | jumlah_alpha | jumlah_izin | jumlah_sakit</code><br>
+                    <code>nis | rata_nilai | jumlah_alpha | jumlah_izin | jumlah_sakit</code><br>
                     Baris pertama adalah header.
                 </div>
                 <a href="{{ route('wali.template-excel') }}" class="btn btn-outline-secondary btn-sm">
@@ -124,5 +131,5 @@
         </form>
     </div>
 </div>
+@endif
 @endsection
-

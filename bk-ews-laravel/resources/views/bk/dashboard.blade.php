@@ -5,29 +5,48 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="fw-bold mb-0">Dashboard Early Warning System</h4>
-        <small class="text-muted">Pemetaan Prioritas Penanganan Siswa — Semester: <strong>{{ $semester }}</strong></small>
+        <small class="text-muted">Pemetaan Prioritas Penanganan Siswa — Semester: <strong>{{ $periode?->nama_semester ?? 'Belum Ada' }}</strong></small>
     </div>
     <div class="d-flex gap-2 align-items-center">
         {{-- Filter Semester --}}
         <form method="GET" class="d-flex gap-2">
-            <select name="semester" class="form-select form-select-sm" onchange="this.form.submit()">
-                @foreach($semesterList as $sem)
-                    <option value="{{ $sem }}" {{ $sem === $semester ? 'selected' : '' }}>{{ $sem }}</option>
+            <select name="semester_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                @foreach($semuaPeriode as $sem)
+                    <option value="{{ $sem->id }}" {{ $periode && $sem->id === $periode->id ? 'selected' : '' }}>
+                        {{ $sem->nama_semester }} {{ $sem->is_aktif ? '(Aktif)' : '' }}
+                    </option>
                 @endforeach
             </select>
         </form>
 
         {{-- Tombol Jalankan EWS --}}
+        @if($periode)
         <form method="POST" action="{{ route('bk.ews.jalankan') }}">
             @csrf
-            <input type="hidden" name="semester" value="{{ $semester }}">
+            <input type="hidden" name="semester_id" value="{{ $periode->id }}">
             <button type="submit" class="btn btn-primary btn-sm"
-                    onclick="return confirm('Jalankan Analisis EWS untuk semester {{ $semester }}?')">
+                    onclick="return confirm('Jalankan Analisis EWS untuk semester {{ $periode->nama_semester }}?')">
                 <i class="bi bi-cpu me-1"></i>Jalankan Analisis EWS
             </button>
         </form>
+        @endif
     </div>
 </div>
+
+@if(session('siswa_belum_lengkap') && count(session('siswa_belum_lengkap')) > 0)
+<div class="alert alert-info alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+    <div class="fw-semibold mb-1"><i class="bi bi-info-circle me-1"></i>{{ count(session('siswa_belum_lengkap')) }} siswa dilewati karena data belum lengkap:</div>
+    <ul class="mb-0 small">
+        @foreach(array_slice(session('siswa_belum_lengkap'), 0, 5) as $sbl)
+            <li><strong>{{ $sbl['nama'] }}</strong> ({{ $sbl['kelas'] }}) — {{ $sbl['alasan'] }}</li>
+        @endforeach
+        @if(count(session('siswa_belum_lengkap')) > 5)
+            <li class="text-muted">... dan {{ count(session('siswa_belum_lengkap')) - 5 }} siswa lainnya.</li>
+        @endif
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
 
 {{-- ═══════════ KARTU STATISTIK ═══════════ --}}
 <div class="row g-3 mb-4">

@@ -7,16 +7,33 @@
         <i class="bi bi-exclamation-triangle me-2"></i>{{ $pesan }}
     </div>
 @else
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
         <h4 class="fw-bold mb-0">Dashboard Kelas {{ $kelas->tingkat }} {{ $kelas->nama_kelas }}</h4>
-        <small class="text-muted">{{ $kelas->jurusan }} — Semester: <strong>{{ $semester }}</strong></small>
+        <small class="text-muted">{{ $kelas->jurusan }} — Semester: <strong>{{ $periode?->nama_semester ?? 'Belum Ada' }}</strong></small>
+    </div>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <form method="GET" class="d-flex gap-2">
+            <select name="semester_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                @foreach($semuaPeriode as $sem)
+                    <option value="{{ $sem->id }}" {{ $periode && $sem->id === $periode->id ? 'selected' : '' }}>
+                        {{ $sem->nama_semester }} {{ $sem->is_aktif ? '(Aktif)' : '' }}
+                    </option>
+                @endforeach
+            </select>
+        </form>
+        <a href="{{ $waShareUrl }}" target="_blank" class="btn btn-success btn-sm">
+            <i class="bi bi-whatsapp me-1"></i>Bagikan Link Kuesioner ke Grup WA
+        </a>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copyKuesionerLink('{{ $linkKuesioner }}', this)">
+            <i class="bi bi-clipboard me-1"></i>Salin Link
+        </button>
     </div>
 </div>
 
 {{-- Statistik Ringkasan --}}
 <div class="row g-3 mb-4">
-    <div class="col-md-4">
+    <div class="col-6 col-md-3">
         <div class="card shadow-sm">
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px">
@@ -29,7 +46,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-6 col-md-3">
         <div class="card shadow-sm border-success border-opacity-25">
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px">
@@ -42,7 +59,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-6 col-md-3">
         <div class="card shadow-sm border-warning border-opacity-25">
             <div class="card-body d-flex align-items-center gap-3">
                 <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px">
@@ -55,18 +72,32 @@
             </div>
         </div>
     </div>
+    <div class="col-6 col-md-3">
+        <div class="card shadow-sm border-danger border-opacity-25">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-danger bg-opacity-10 d-flex align-items-center justify-content-center" style="width:48px;height:48px">
+                    <i class="bi bi-exclamation-triangle text-danger fs-5"></i>
+                </div>
+                <div>
+                    <div class="fs-4 fw-bold text-danger">{{ $stats['risiko_tinggi'] }}</div>
+                    <small class="text-muted">Risiko Tinggi</small>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 {{-- Hasil EWS Kelas --}}
 <div class="card shadow-sm mb-4">
-    <div class="card-header bg-transparent border-0 fw-semibold">
-        <i class="bi bi-speedometer2 me-2 text-primary"></i>Pemetaan Risiko Siswa Kelas Ini
+    <div class="card-header bg-transparent border-0 fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-speedometer2 me-2 text-primary"></i>Pemetaan Risiko Siswa Kelas Ini</span>
+        <span class="badge bg-light text-dark border">{{ $hasilEws->count() }} siswa teranalisis</span>
     </div>
     <div class="card-body p-0">
         @if($hasilEws->isEmpty())
             <div class="text-center py-4 text-muted">
                 <i class="bi bi-inbox d-block fs-1 mb-2"></i>
-                Belum ada hasil analisis EWS untuk kelas ini.
+                Belum ada hasil analisis EWS untuk kelas ini pada semester terpilih.
             </div>
         @else
         <div class="table-responsive">
@@ -76,6 +107,7 @@
                         <th>Siswa</th>
                         <th>Status Risiko</th>
                         <th>Prioritas</th>
+                        <th>Anomali</th>
                         <th>Pemicu</th>
                     </tr>
                 </thead>
@@ -95,6 +127,13 @@
                         </span>
                     </td>
                     <td><small>{{ $ews->ikon_prioritas }} {{ $ews->label_prioritas }}</small></td>
+                    <td>
+                        @if($ews->is_anomali)
+                            <span class="badge bg-warning text-dark">⚠️ Anomali</span>
+                        @else
+                            <span class="text-muted small">—</span>
+                        @endif
+                    </td>
                     <td><small class="text-muted">{{ $ews->pemicu_utama }}</small></td>
                 </tr>
                 @endforeach
@@ -114,10 +153,15 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
-                    <tr><th>Siswa</th><th>NIS</th><th>Status Kuesioner</th></tr>
+                    <tr>
+                        <th>Siswa</th>
+                        <th>NIS</th>
+                        <th>Status Kuesioner</th>
+                        <th>Waktu Mengisi</th>
+                    </tr>
                 </thead>
                 <tbody>
-                @foreach($siswaDenganStatusKuesioner as $s)
+                @foreach($siswaStatusKuesioner as $s)
                 <tr>
                     <td>{{ $s->nama_lengkap }}</td>
                     <td>{{ $s->nis }}</td>
@@ -125,8 +169,13 @@
                         @if($s->sudah_isi_kuesioner)
                             <span class="badge bg-success"><i class="bi bi-check2 me-1"></i>Sudah Mengisi</span>
                         @else
-                            <span class="badge bg-warning text-dark"><i class="bi bi-hourglass me-1"></i>Belum Mengisi</span>
+                            <span class="badge bg-danger bg-opacity-75"><i class="bi bi-hourglass me-1"></i>Belum Mengisi</span>
                         @endif
+                    </td>
+                    <td>
+                        <small class="text-muted">
+                            {{ $s->tanggal_isi ? \Carbon\Carbon::parse($s->tanggal_isi)->isoFormat('D MMM Y, HH:mm') : '—' }}
+                        </small>
                     </td>
                 </tr>
                 @endforeach
@@ -138,3 +187,14 @@
 @endif
 @endsection
 
+@push('scripts')
+<script>
+function copyKuesionerLink(url, btn) {
+    navigator.clipboard.writeText(url).then(() => {
+        const original = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Tersalin!';
+        setTimeout(() => btn.innerHTML = original, 2000);
+    });
+}
+</script>
+@endpush
