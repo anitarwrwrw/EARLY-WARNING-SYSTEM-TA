@@ -115,8 +115,59 @@
     @auth
     @php $role = auth()->user()->role; @endphp
 
+    {{-- Menu Admin (Operator) --}}
+    @if($role === 'admin')
+    <div class="nav-section">Utama</div>
+    <ul class="nav flex-column px-2">
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
+               href="{{ route('admin.dashboard') }}">
+                <i class="bi bi-speedometer2"></i> Dashboard Admin
+            </a>
+        </li>
+    </ul>
+
+    <div class="nav-section">Data Master</div>
+    <ul class="nav flex-column px-2">
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('admin.periode.*') ? 'active' : '' }}"
+               href="{{ route('admin.periode.index') }}">
+                <i class="bi bi-calendar3"></i> Periode Semester
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
+               href="{{ route('admin.users.index') }}">
+                <i class="bi bi-person-badge"></i> Akun Pengguna
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('admin.kelas.*') ? 'active' : '' }}"
+               href="{{ route('admin.kelas.index') }}">
+                <i class="bi bi-building"></i> Data Kelas
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('admin.siswa.*') ? 'active' : '' }}"
+               href="{{ route('admin.siswa.index') }}">
+                <i class="bi bi-people"></i> Data Siswa
+            </a>
+        </li>
+    </ul>
+
+    <div class="nav-section">Sistem</div>
+    <ul class="nav flex-column px-2">
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('admin.pengaturan.*') ? 'active' : '' }}"
+               href="{{ route('admin.pengaturan.index') }}">
+                <i class="bi bi-gear"></i> Pengaturan API
+            </a>
+        </li>
+    </ul>
+    @endif
+
     {{-- Menu Guru BK --}}
-    @if($role === 'bk')
+    @if($role === 'guru_bk')
     <div class="nav-section">Dashboard</div>
     <ul class="nav flex-column px-2">
         <li class="nav-item">
@@ -178,23 +229,11 @@
     </ul>
     @endif
 
-    {{-- Menu Siswa --}}
-    @if($role === 'siswa')
-    <ul class="nav flex-column px-2 mt-2">
-        <li class="nav-item">
-            <a class="nav-link {{ request()->routeIs('siswa.kuesioner') ? 'active' : '' }}"
-               href="{{ route('siswa.kuesioner') }}">
-                <i class="bi bi-clipboard-heart"></i> Survei Kesejahteraan
-            </a>
-        </li>
-    </ul>
-    @endif
-
     {{-- Logout --}}
-    <div class="mt-auto p-3" style="position:absolute; bottom:0; width:100%">
+    <div class="mt-4 p-3">
         <div class="border-top border-white-25 pt-2 mb-2">
             <small class="text-white-50 d-block text-truncate">{{ auth()->user()->name }}</small>
-            <small class="text-white-50" style="font-size:.7rem">{{ ucfirst(auth()->user()->role) }}</small>
+            <small class="text-white-50" style="font-size:.7rem">{{ ucfirst(str_replace('_', ' ', auth()->user()->role)) }}</small>
         </div>
         <form method="POST" action="{{ route('logout') }}">
             @csrf

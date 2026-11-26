@@ -108,11 +108,16 @@
         </form>
 
         <hr class="my-3">
+        <div class="text-center mb-2">
+            <a href="{{ route('kuesioner.publik') }}" class="btn btn-outline-primary btn-sm w-100">
+                <i class="bi bi-clipboard-heart me-1"></i>Siswa? Isi Kuesioner Publik (Tanpa Login)
+            </a>
+        </div>
         <small class="text-muted d-block text-center">
             <strong>Demo Login:</strong><br>
+            Admin: <code>admin</code> / <code>password</code><br>
             Guru BK: <code>gurubk</code> / <code>password</code><br>
-            Wali Kelas: <code>wali_xi_tkj1</code> / <code>password</code><br>
-            Siswa: <code>20240001</code> / <code>password</code>
+            Wali Kelas: <code>wali_xi_tkj1</code> / <code>password</code>
         </small>
     </div>
 </div>
