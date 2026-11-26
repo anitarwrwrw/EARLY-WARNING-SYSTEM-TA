@@ -151,7 +151,7 @@ class WaliKelasController extends Controller
         AkademikAbsensi::updateOrCreate(
             ['siswa_id' => $validated['siswa_id'], 'semester_id' => $validated['semester_id']],
             [
-                'input_oleh'   => Auth::id(),
+                'wali_kelas_id' => Auth::id(),
                 'rata_nilai'   => $validated['rata_nilai'],
                 'tren_nilai'   => $trenNilai,
                 'jumlah_alpha' => $validated['jumlah_alpha'],

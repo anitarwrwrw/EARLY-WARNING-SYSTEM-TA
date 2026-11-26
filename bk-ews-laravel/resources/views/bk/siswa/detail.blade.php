@@ -233,15 +233,15 @@ View [bk.pelanggaran.index] not found.@extends('layouts.app')
                 @foreach($tindakLanjut as $tl)
                     <tr>
                         <td>{{ \Carbon\Carbon::parse($tl->tanggal_konseling)->isoFormat('D MMM Y') }}</td>
-                        <td><span class="badge bg-light text-dark border">{{ $tl->tipe_konseling ?? 'Individual' }}</span></td>
+                        <td><span class="badge bg-light text-dark border">{{ $tl->bentuk_penanganan ?? 'Individual' }}</span></td>
                         <td>
-                            @if($tl->status_penanganan === 'Selesai')
+                            @if($tl->status_kasus === 'Selesai')
                                 <span class="badge bg-success">Selesai</span>
                             @else
                                 <span class="badge bg-warning text-dark">Proses</span>
                             @endif
                         </td>
-                        <td>{{ $tl->catatan_pembinaan ?: '-' }}</td>
+                        <td>{{ $tl->catatan_konseling ?: '-' }}</td>
                         <td><small class="text-muted">{{ $tl->guruBk->name ?? '-' }}</small></td>
                     </tr>
                 @endforeach

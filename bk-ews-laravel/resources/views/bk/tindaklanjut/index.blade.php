@@ -47,7 +47,7 @@
                         </td>
                         <td><small>{{ $tl->siswa->kelas->tingkat ?? '' }} {{ $tl->siswa->kelas->nama_kelas ?? '-' }}</small></td>
                         <td>
-                            <span class="badge bg-light text-dark border">{{ $tl->tipe_konseling ?? 'Individual' }}</span>
+                            <span class="badge bg-light text-dark border">{{ $tl->bentuk_penanganan ?? 'Individual' }}</span>
                         </td>
                         <td>
                             @if($tl->hasilEws)
@@ -59,12 +59,12 @@
                             @endif
                         </td>
                         <td>
-                            <div style="max-width: 250px;" class="text-truncate" title="{{ $tl->catatan_pembinaan }}">
-                                {{ $tl->catatan_pembinaan ?: '-' }}
+                            <div style="max-width: 250px;" class="text-truncate" title="{{ $tl->catatan_konseling }}">
+                                {{ $tl->catatan_konseling ?: '-' }}
                             </div>
                         </td>
                         <td>
-                            @if($tl->status_penanganan === 'Selesai')
+                            @if($tl->status_kasus === 'Selesai')
                                 <span class="badge bg-success"><i class="bi bi-check2 me-1"></i>Selesai</span>
                             @else
                                 <span class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Dalam Proses</span>

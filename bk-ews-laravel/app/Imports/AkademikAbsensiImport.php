@@ -22,7 +22,7 @@ class AkademikAbsensiImport implements ToCollection, WithHeadingRow
 
     public function __construct(
         private readonly int $semesterId,
-        private readonly int $inputOlehId,
+        private readonly int $waliKelasId,
     ) {}
 
     public function collection(Collection $rows): void
@@ -55,7 +55,7 @@ class AkademikAbsensiImport implements ToCollection, WithHeadingRow
             $record = AkademikAbsensi::updateOrCreate(
                 ['siswa_id' => $siswa->id, 'semester_id' => $this->semesterId],
                 [
-                    'input_oleh'   => $this->inputOlehId,
+                    'wali_kelas_id' => $this->waliKelasId,
                     'rata_nilai'   => $nilaiSekarang,
                     'tren_nilai'   => $trenNilai,
                     'jumlah_alpha' => (int) ($row['jumlah_alpha'] ?? 0),

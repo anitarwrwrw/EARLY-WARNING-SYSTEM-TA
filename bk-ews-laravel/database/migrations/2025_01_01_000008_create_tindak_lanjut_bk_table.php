@@ -17,9 +17,9 @@ return new class extends Migration
             $table->unsignedBigInteger('guru_bk_id');
             $table->foreign('guru_bk_id')->references('id')->on('users');
             $table->date('tanggal_konseling');
-            $table->text('catatan_pembinaan')->nullable();
-            $table->enum('status_penanganan', ['Proses', 'Selesai'])->default('Proses');
-            $table->string('tipe_konseling')->nullable(); // Individual, Kelompok, Orang Tua
+            $table->string('bentuk_penanganan')->nullable(); // Individual, Kelompok, Orang Tua
+            $table->text('catatan_konseling')->nullable();
+            $table->enum('status_kasus', ['Proses', 'Selesai'])->default('Proses');
             $table->timestamps();
         });
     }

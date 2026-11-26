@@ -11,8 +11,8 @@ class TindakLanjutBk extends Model
 
     protected $fillable = [
         'siswa_id', 'hasil_ews_id', 'guru_bk_id',
-        'tanggal_konseling', 'catatan_pembinaan',
-        'status_penanganan', 'tipe_konseling',
+        'tanggal_konseling', 'bentuk_penanganan',
+        'catatan_konseling', 'status_kasus',
     ];
 
     protected function casts(): array

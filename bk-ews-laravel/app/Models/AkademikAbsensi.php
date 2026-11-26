@@ -10,8 +10,8 @@ class AkademikAbsensi extends Model
     protected $table = 'akademik_absensi';
 
     protected $fillable = [
-        'siswa_id', 'semester_id', 'input_oleh',
-        'rata_nilai',   // Nama sesuai blueprint (bukan rata_rata_nilai)
+        'siswa_id', 'semester_id', 'wali_kelas_id',
+        'rata_nilai',   // Disingkat dari rata_rata_nilai untuk keterbacaan kode
         'tren_nilai',
         'jumlah_alpha', 'jumlah_izin', 'jumlah_sakit',
     ];
@@ -36,8 +36,8 @@ class AkademikAbsensi extends Model
         return $this->belongsTo(PeriodeSemester::class, 'semester_id');
     }
 
-    public function inputOleh(): BelongsTo
+    public function waliKelas(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'input_oleh');
+        return $this->belongsTo(User::class, 'wali_kelas_id');
     }
 }

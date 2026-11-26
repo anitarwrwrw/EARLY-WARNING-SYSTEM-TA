@@ -12,9 +12,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('siswa_id');
             $table->foreign('siswa_id')->references('id')->on('siswa')->cascadeOnDelete();
-            $table->unsignedBigInteger('dikirim_oleh')->nullable();
-            $table->foreign('dikirim_oleh')->references('id')->on('users')->nullOnDelete();
-            $table->string('no_tujuan', 20);
+            $table->unsignedBigInteger('guru_bk_id')->nullable();
+            $table->foreign('guru_bk_id')->references('id')->on('users')->nullOnDelete();
+            $table->string('no_wa_tujuan', 20);
             $table->enum('jenis_template', ['koordinasi_preventif', 'undangan_konseling', 'apresiasi_positif']);
             $table->text('isi_pesan');
             $table->enum('status_kirim', ['Berhasil', 'Gagal'])->default('Gagal');

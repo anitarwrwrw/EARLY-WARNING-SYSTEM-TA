@@ -38,9 +38,9 @@ class TindakLanjutController extends Controller
             'siswa_id'          => 'required|exists:siswa,id',
             'hasil_ews_id'      => 'nullable|exists:hasil_prediksi_ews,id',
             'tanggal_konseling' => 'required|date',
-            'catatan_pembinaan' => 'nullable|string|max:5000',
-            'status_penanganan' => 'required|in:Proses,Selesai',
-            'tipe_konseling'    => 'nullable|string|max:100',
+            'catatan_konseling' => 'nullable|string|max:5000',
+            'status_kasus'      => 'required|in:Proses,Selesai',
+            'bentuk_penanganan' => 'nullable|string|max:100',
         ]);
 
         TindakLanjutBk::create([
@@ -62,9 +62,9 @@ class TindakLanjutController extends Controller
     {
         $validated = $request->validate([
             'tanggal_konseling' => 'required|date',
-            'catatan_pembinaan' => 'nullable|string|max:5000',
-            'status_penanganan' => 'required|in:Proses,Selesai',
-            'tipe_konseling'    => 'nullable|string|max:100',
+            'catatan_konseling' => 'nullable|string|max:5000',
+            'status_kasus'      => 'required|in:Proses,Selesai',
+            'bentuk_penanganan' => 'nullable|string|max:100',
         ]);
 
         $tindakLanjut->update($validated);
@@ -129,8 +129,8 @@ class TindakLanjutController extends Controller
         // Simpan log
         LogWhatsapp::create([
             'siswa_id'       => $siswa->id,
-            'dikirim_oleh'   => Auth::id(),
-            'no_tujuan'      => $siswa->no_wa_ortu,
+            'guru_bk_id'     => Auth::id(),
+            'no_wa_tujuan'   => $siswa->no_wa_ortu,
             'jenis_template' => $validated['jenis_template'],
             'isi_pesan'      => $pesan,
             'status_kirim'   => $statusKirim,

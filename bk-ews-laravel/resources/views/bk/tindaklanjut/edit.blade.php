@@ -38,48 +38,48 @@
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-medium">Tipe Bimbingan / Konseling</label>
-                            <select name="tipe_konseling" class="form-select @error('tipe_konseling') is-invalid @enderror">
-                                <option value="Konseling Individual" {{ old('tipe_konseling', $tindakLanjut->tipe_konseling) == 'Konseling Individual' ? 'selected' : '' }}>Konseling Individual</option>
-                                <option value="Konseling Kelompok" {{ old('tipe_konseling', $tindakLanjut->tipe_konseling) == 'Konseling Kelompok' ? 'selected' : '' }}>Konseling Kelompok</option>
-                                <option value="Panggilan Orang Tua" {{ old('tipe_konseling', $tindakLanjut->tipe_konseling) == 'Panggilan Orang Tua' ? 'selected' : '' }}>Panggilan Orang Tua ke Sekolah</option>
-                                <option value="Kunjungan Rumah (Home Visit)" {{ old('tipe_konseling', $tindakLanjut->tipe_konseling) == 'Kunjungan Rumah (Home Visit)' ? 'selected' : '' }}>Kunjungan Rumah (Home Visit)</option>
-                                <option value="Alih Tangan Kasus (Referral)" {{ old('tipe_konseling', $tindakLanjut->tipe_konseling) == 'Alih Tangan Kasus (Referral)' ? 'selected' : '' }}>Alih Tangan Kasus (Referral)</option>
+                            <label class="form-label fw-medium">Bentuk Penanganan / Konseling</label>
+                            <select name="bentuk_penanganan" class="form-select @error('bentuk_penanganan') is-invalid @enderror">
+                                <option value="Konseling Individual" {{ old('bentuk_penanganan', $tindakLanjut->bentuk_penanganan) == 'Konseling Individual' ? 'selected' : '' }}>Konseling Individual</option>
+                                <option value="Konseling Kelompok" {{ old('bentuk_penanganan', $tindakLanjut->bentuk_penanganan) == 'Konseling Kelompok' ? 'selected' : '' }}>Konseling Kelompok</option>
+                                <option value="Panggilan Orang Tua" {{ old('bentuk_penanganan', $tindakLanjut->bentuk_penanganan) == 'Panggilan Orang Tua' ? 'selected' : '' }}>Panggilan Orang Tua ke Sekolah</option>
+                                <option value="Kunjungan Rumah (Home Visit)" {{ old('bentuk_penanganan', $tindakLanjut->bentuk_penanganan) == 'Kunjungan Rumah (Home Visit)' ? 'selected' : '' }}>Kunjungan Rumah (Home Visit)</option>
+                                <option value="Alih Tangan Kasus (Referral)" {{ old('bentuk_penanganan', $tindakLanjut->bentuk_penanganan) == 'Alih Tangan Kasus (Referral)' ? 'selected' : '' }}>Alih Tangan Kasus (Referral)</option>
                             </select>
-                            @error('tipe_konseling')
+                            @error('bentuk_penanganan')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-medium">Status Penanganan <span class="text-danger">*</span></label>
+                        <label class="form-label fw-medium">Status Kasus <span class="text-danger">*</span></label>
                         <div class="d-flex gap-4">
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status_penanganan" id="status_proses" value="Proses"
-                                       {{ old('status_penanganan', $tindakLanjut->status_penanganan) === 'Proses' ? 'checked' : '' }} required>
+                                <input class="form-check-input" type="radio" name="status_kasus" id="status_proses" value="Proses"
+                                       {{ old('status_kasus', $tindakLanjut->status_kasus) === 'Proses' ? 'checked' : '' }} required>
                                 <label class="form-check-label" for="status_proses">
                                     <span class="badge bg-warning text-dark"><i class="bi bi-arrow-repeat me-1"></i>Dalam Proses</span>
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status_penanganan" id="status_selesai" value="Selesai"
-                                       {{ old('status_penanganan', $tindakLanjut->status_penanganan) === 'Selesai' ? 'checked' : '' }}>
+                                <input class="form-check-input" type="radio" name="status_kasus" id="status_selesai" value="Selesai"
+                                       {{ old('status_kasus', $tindakLanjut->status_kasus) === 'Selesai' ? 'checked' : '' }}>
                                 <label class="form-check-label" for="status_selesai">
                                     <span class="badge bg-success"><i class="bi bi-check2 me-1"></i>Selesai / Teratasi</span>
                                 </label>
                             </div>
                         </div>
-                        @error('status_penanganan')
+                        @error('status_kasus')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-medium">Catatan Pembinaan & Hasil Konseling</label>
-                        <textarea name="catatan_pembinaan" class="form-control @error('catatan_pembinaan') is-invalid @enderror"
-                                  rows="5">{{ old('catatan_pembinaan', $tindakLanjut->catatan_pembinaan) }}</textarea>
-                        @error('catatan_pembinaan')
+                        <label class="form-label fw-medium">Catatan Konseling & Hasil Pembinaan</label>
+                        <textarea name="catatan_konseling" class="form-control @error('catatan_konseling') is-invalid @enderror"
+                                  rows="5">{{ old('catatan_konseling', $tindakLanjut->catatan_konseling) }}</textarea>
+                        @error('catatan_konseling')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

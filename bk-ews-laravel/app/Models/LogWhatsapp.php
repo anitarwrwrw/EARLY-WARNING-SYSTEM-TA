@@ -10,7 +10,7 @@ class LogWhatsapp extends Model
     protected $table = 'log_whatsapp';
 
     protected $fillable = [
-        'siswa_id', 'dikirim_oleh', 'no_tujuan',
+        'siswa_id', 'guru_bk_id', 'no_wa_tujuan',
         'jenis_template', 'isi_pesan', 'status_kirim',
         'response_api', 'waktu_kirim',
     ];
@@ -25,9 +25,9 @@ class LogWhatsapp extends Model
         return $this->belongsTo(Siswa::class, 'siswa_id');
     }
 
-    public function dikirimOleh(): BelongsTo
+    public function guruBk(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'dikirim_oleh');
+        return $this->belongsTo(User::class, 'guru_bk_id');
     }
 }
 

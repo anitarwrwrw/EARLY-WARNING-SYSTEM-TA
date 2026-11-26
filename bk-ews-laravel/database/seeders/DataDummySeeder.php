@@ -65,7 +65,7 @@ class DataDummySeeder extends Seeder
                 AkademikAbsensi::firstOrCreate(
                     ['siswa_id' => $s->id, 'semester_id' => $semLalu->id],
                     [
-                        'input_oleh'   => null,
+                        'wali_kelas_id' => null,
                         'rata_nilai'   => $nilaiLalu,
                         'tren_nilai'   => 0,
                         'jumlah_alpha' => rand(0, 2),
@@ -79,7 +79,7 @@ class DataDummySeeder extends Seeder
             AkademikAbsensi::firstOrCreate(
                 ['siswa_id' => $s->id, 'semester_id' => $semAktif->id],
                 [
-                    'input_oleh'   => null,
+                    'wali_kelas_id' => null,
                     'rata_nilai'   => $nilaiSkrg,
                     'tren_nilai'   => round($nilaiSkrg - $nilaiLalu, 2),
                     'jumlah_alpha' => $alpha,

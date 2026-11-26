@@ -15,8 +15,8 @@ return new class extends Migration
             // Referensi ke periode semester aktif
             $table->unsignedBigInteger('semester_id');
             $table->foreign('semester_id')->references('id')->on('periode_semester');
-            $table->unsignedBigInteger('input_oleh')->nullable();
-            $table->foreign('input_oleh')->references('id')->on('users')->nullOnDelete();
+            $table->unsignedBigInteger('wali_kelas_id')->nullable();
+            $table->foreign('wali_kelas_id')->references('id')->on('users')->nullOnDelete();
             $table->decimal('rata_nilai', 5, 2)->default(0);         // Nama sesuai blueprint: rata_nilai
             $table->decimal('tren_nilai', 6, 2)->default(0);         // Selisih vs semester lalu (+/-)
             $table->unsignedSmallInteger('jumlah_alpha')->default(0); // Ketidakhadiran tanpa ket.
