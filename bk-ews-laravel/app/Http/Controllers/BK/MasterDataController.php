@@ -104,4 +104,61 @@ class MasterDataController extends Controller
         $pelanggaran->delete();
         return back()->with('success', 'Catatan pelanggaran berhasil dihapus.');
     }
+
+    // ════════════════════════════════════════════════════════════════
+    //  KELOLA KATEGORI POIN PELANGGARAN (GURU BK)
+    // ════════════════════════════════════════════════════════════════
+
+    public function indexKategoriPelanggaran()
+    {
+        $kategoriList = KategoriPelanggaran::withCount('pelanggaran')
+            ->orderByRaw("FIELD(kategori, 'Ringan', 'Sedang', 'Berat')")
+            ->orderBy('nama')
+            ->get();
+
+        return view('bk.master.kategori.index', compact('kategoriList'));
+    }
+
+    public function storeKategoriPelanggaran(Request $request)
+    {
+        $validated = $request->validate([
+            'nama'       => 'required|string|max:255',
+            'kategori'   => 'required|in:Ringan,Sedang,Berat',
+            'bobot_poin' => 'required|integer|min:1|max:100',
+            'keterangan' => 'nullable|string|max:500',
+        ]);
+
+        KategoriPelanggaran::create($validated);
+
+        return redirect()->route('bk.master.kategori.index')
+            ->with('success', "Kategori '{$validated['nama']}' (+{$validated['bobot_poin']} poin) berhasil ditambahkan.");
+    }
+
+    public function updateKategoriPelanggaran(Request $request, KategoriPelanggaran $kategori)
+    {
+        $validated = $request->validate([
+            'nama'       => 'required|string|max:255',
+            'kategori'   => 'required|in:Ringan,Sedang,Berat',
+            'bobot_poin' => 'required|integer|min:1|max:100',
+            'keterangan' => 'nullable|string|max:500',
+        ]);
+
+        $kategori->update($validated);
+
+        return redirect()->route('bk.master.kategori.index')
+            ->with('success', "Kategori '{$kategori->nama}' berhasil diperbarui.");
+    }
+
+    public function destroyKategoriPelanggaran(KategoriPelanggaran $kategori)
+    {
+        if ($kategori->pelanggaran()->exists()) {
+            return back()->with('error', 'Kategori tidak dapat dihapus karena sudah digunakan pada catatan pelanggaran siswa.');
+        }
+
+        $nama = $kategori->nama;
+        $kategori->delete();
+
+        return redirect()->route('bk.master.kategori.index')
+            ->with('success', "Kategori '{$nama}' berhasil dihapus.");
+    }
 }

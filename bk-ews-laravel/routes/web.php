@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\SiswaController as AdminSiswaController;
 use App\Http\Controllers\Admin\PengaturanController;
 use App\Http\Controllers\BK\EwsController;
+use App\Http\Controllers\BK\KuesionerMasterController;
 use App\Http\Controllers\BK\MasterDataController;
 use App\Http\Controllers\BK\TindakLanjutController;
 use App\Http\Controllers\WaliKelas\WaliKelasController;
@@ -104,6 +105,19 @@ Route::middleware(['auth', 'role:guru_bk'])->prefix('bk')->name('bk.')->group(fu
         Route::get('/pelanggaran', [MasterDataController::class, 'indexPelanggaran'])->name('pelanggaran.index');
         Route::post('/pelanggaran', [MasterDataController::class, 'storePelanggaran'])->name('pelanggaran.store');
         Route::delete('/pelanggaran/{pelanggaran}', [MasterDataController::class, 'destroyPelanggaran'])->name('pelanggaran.destroy');
+
+        Route::get('/kategori-pelanggaran', [MasterDataController::class, 'indexKategoriPelanggaran'])->name('kategori.index');
+        Route::post('/kategori-pelanggaran', [MasterDataController::class, 'storeKategoriPelanggaran'])->name('kategori.store');
+        Route::put('/kategori-pelanggaran/{kategori}', [MasterDataController::class, 'updateKategoriPelanggaran'])->name('kategori.update');
+        Route::delete('/kategori-pelanggaran/{kategori}', [MasterDataController::class, 'destroyKategoriPelanggaran'])->name('kategori.destroy');
+    });
+
+    // Kelola Pertanyaan Kuesioner & Monitoring Global
+    Route::prefix('kuesioner')->name('kuesioner.')->group(function () {
+        Route::get('/', [KuesionerMasterController::class, 'index'])->name('index');
+        Route::post('/', [KuesionerMasterController::class, 'store'])->name('store');
+        Route::put('/{pertanyaan}', [KuesionerMasterController::class, 'update'])->name('update');
+        Route::delete('/{pertanyaan}', [KuesionerMasterController::class, 'destroy'])->name('destroy');
     });
 
     // Tindak Lanjut Konseling
@@ -116,6 +130,7 @@ Route::middleware(['auth', 'role:guru_bk'])->prefix('bk')->name('bk.')->group(fu
     });
 
     // WhatsApp
+    Route::get('/whatsapp/log', [TindakLanjutController::class, 'logWhatsapp'])->name('whatsapp.log');
     Route::post('/whatsapp/kirim', [TindakLanjutController::class, 'kirimWhatsapp'])->name('whatsapp.kirim');
 });
 

@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             PengaturanSistemSeeder::class,
             PeriodeSemesterSeeder::class,
             KategoriPelanggaranSeeder::class,
+            PertanyaanKuesionerSeeder::class,
             UserSeeder::class,
             KelasSeeder::class,
             SiswaSeeder::class,

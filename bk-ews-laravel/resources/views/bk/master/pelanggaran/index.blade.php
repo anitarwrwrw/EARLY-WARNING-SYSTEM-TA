@@ -7,9 +7,14 @@
         <h4 class="fw-bold mb-0">Catatan Pelanggaran Tata Tertib</h4>
         <small class="text-muted">Akumulasi poin kedisiplinan sebagai fitur input prediksi risiko EWS</small>
     </div>
-    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahPelanggaran">
-        <i class="bi bi-exclamation-octagon me-1"></i>Catat Pelanggaran Siswa
-    </button>
+    <div class="d-flex gap-2">
+        <a href="{{ route('bk.master.kategori.index') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-tags me-1"></i>Kelola Kategori Poin
+        </a>
+        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahPelanggaran">
+            <i class="bi bi-exclamation-octagon me-1"></i>Catat Pelanggaran Siswa
+        </button>
+    </div>
 </div>
 
 {{-- Filter Siswa --}}

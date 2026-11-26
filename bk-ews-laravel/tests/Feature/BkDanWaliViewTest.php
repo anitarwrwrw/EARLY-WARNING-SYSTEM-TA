@@ -7,6 +7,7 @@ use App\Models\KategoriPelanggaran;
 use App\Models\Kelas;
 use App\Models\Pelanggaran;
 use App\Models\PeriodeSemester;
+use App\Models\PertanyaanKuesioner;
 use App\Models\Siswa;
 use App\Models\User;
 use Tests\TestCase;
@@ -27,8 +28,11 @@ class BkDanWaliViewTest extends TestCase
             '/bk/master/siswa',
             '/bk/master/kelas',
             '/bk/master/pelanggaran',
+            '/bk/master/kategori-pelanggaran',
+            '/bk/kuesioner',
             '/bk/tindaklanjut',
             '/bk/tindaklanjut/tambah',
+            '/bk/whatsapp/log',
         ];
 
         foreach ($urls as $url) {
@@ -121,5 +125,39 @@ class BkDanWaliViewTest extends TestCase
         $this->assertNotNull($pel);
         $this->assertEquals($kat->bobot_poin, $pel->poin);
         $pel->delete();
+    }
+
+    public function test_guru_bk_dapat_kelola_kategori_dan_pertanyaan_kuesioner(): void
+    {
+        $guruBk = User::where('role', 'guru_bk')->first();
+
+        // Uji tambah & hapus kategori pelanggaran
+        $resKat = $this->actingAs($guruBk)->post('/bk/master/kategori-pelanggaran', [
+            'nama'       => 'Kategori Uji Coba',
+            'kategori'   => 'Ringan',
+            'bobot_poin' => 5,
+            'keterangan' => 'Uji coba CRUD kategori',
+        ]);
+        $resKat->assertRedirect('/bk/master/kategori-pelanggaran');
+
+        $kat = KategoriPelanggaran::where('nama', 'Kategori Uji Coba')->first();
+        $this->assertNotNull($kat);
+        $this->actingAs($guruBk)->delete("/bk/master/kategori-pelanggaran/{$kat->id}")
+            ->assertRedirect('/bk/master/kategori-pelanggaran');
+
+        // Uji tambah & hapus pertanyaan kuesioner
+        $resPert = $this->actingAs($guruBk)->post('/bk/kuesioner', [
+            'no_urut'    => 99,
+            'aspek'      => 'motivasi',
+            'pernyataan' => 'Pernyataan uji coba kuesioner',
+            'is_reverse' => 0,
+            'is_active'  => 0,
+        ]);
+        $resPert->assertRedirect('/bk/kuesioner');
+
+        $pert = PertanyaanKuesioner::where('no_urut', 99)->first();
+        $this->assertNotNull($pert);
+        $this->actingAs($guruBk)->delete("/bk/kuesioner/{$pert->id}")
+            ->assertRedirect('/bk/kuesioner');
     }
 }

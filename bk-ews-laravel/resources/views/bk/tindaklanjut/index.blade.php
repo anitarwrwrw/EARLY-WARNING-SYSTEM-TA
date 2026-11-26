@@ -7,9 +7,14 @@
         <h4 class="fw-bold mb-0">Tindak Lanjut & Konseling Siswa</h4>
         <small class="text-muted">Pencatatan sesi bimbingan, konseling individu/kelompok, dan panggilan orang tua</small>
     </div>
-    <a href="{{ route('bk.tindaklanjut.create') }}" class="btn btn-primary btn-sm">
-        <i class="bi bi-journal-plus me-1"></i>Catat Tindak Lanjut Baru
-    </a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('bk.whatsapp.log') }}" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-whatsapp me-1"></i>Riwayat Log WA
+        </a>
+        <a href="{{ route('bk.tindaklanjut.create') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-journal-plus me-1"></i>Catat Tindak Lanjut Baru
+        </a>
+    </div>
 </div>
 
 <div class="card shadow-sm">

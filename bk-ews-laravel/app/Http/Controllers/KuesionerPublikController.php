@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Kelas;
 use App\Models\KuesionerPsikososial;
 use App\Models\PeriodeSemester;
+use App\Models\PertanyaanKuesioner;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 
@@ -56,8 +57,31 @@ class KuesionerPublikController extends Controller
             'isBuka'             => $isBuka,
             'kelasList'          => $kelasList,
             'preselectedKelasId' => $preselectedKelasId,
-            'butirList'          => self::BUTIR_KUESIONER,
+            'butirList'          => $this->getButirKuesioner(),
         ]);
+    }
+
+    /**
+     * Ambil daftar butir pertanyaan aktif dari database (fallback ke konstanta jika kosong).
+     */
+    private function getButirKuesioner(): array
+    {
+        $pertanyaanDb = PertanyaanKuesioner::where('is_active', true)
+            ->orderByRaw("FIELD(aspek, 'motivasi', 'keluarga', 'keamanan')")
+            ->orderBy('no_urut')
+            ->get();
+
+        if ($pertanyaanDb->isEmpty()) {
+            return self::BUTIR_KUESIONER;
+        }
+
+        return $pertanyaanDb->map(fn($p) => [
+            'no'          => $p->no_urut,
+            'aspek'       => $p->aspek,
+            'label_aspek' => $p->label_aspek,
+            'pernyataan'  => $p->pernyataan,
+            'reverse'     => (bool) $p->is_reverse,
+        ])->values()->toArray();
     }
 
     /**
@@ -151,30 +175,46 @@ class KuesionerPublikController extends Controller
             return back()->withInput()->with('warning', "Halo {$siswa->nama_lengkap}, Anda sudah mengisi kuesioner untuk semester {$semesterAktif->nama_semester}. Terima kasih atas partisipasi Anda!");
         }
 
-        // 3. Validasi 15 butir kuesioner (Skala 1 - 5)
-        $rules = [];
-        $messages = [];
-        for ($i = 1; $i <= 15; $i++) {
-            $rules["jawaban.{$i}"] = 'required|integer|between:1,5';
-            $messages["jawaban.{$i}.required"] = "Pernyataan nomor {$i} belum dijawab.";
+        // 3. Validasi seluruh butir kuesioner aktif (Skala 1 - 5)
+        $butirList = $this->getButirKuesioner();
+        $rules     = [];
+        $messages  = [];
+
+        foreach ($butirList as $butir) {
+            $no = $butir['no'];
+            $rules["jawaban.{$no}"]              = 'required|integer|between:1,5';
+            $messages["jawaban.{$no}.required"]  = "Pernyataan nomor {$no} belum dijawab.";
         }
 
         $validated = $request->validate($rules, $messages);
-        $jawaban   = $validated['jawaban']; // [1..15 => skor]
+        $jawaban   = $validated['jawaban'];
 
-        // Susun array jawaban 0-based
-        $jawabanArray = array_map(fn($i) => (int) ($jawaban[$i] ?? 3), range(1, 15));
+        // Hitung skor masing-masing aspek dengan reverse scoring otomatis sesuai atribut tiap butir
+        $skorPerAspek = [
+            'motivasi' => 0,
+            'keluarga' => 0,
+            'keamanan' => 0,
+        ];
+        $jawabanArray = [];
 
-        // Hitung skor aspek dengan reverse scoring otomatis
-        $skor = KuesionerPsikososial::hitungSkor($jawabanArray);
+        foreach ($butirList as $butir) {
+            $no       = $butir['no'];
+            $nilaiRaw = (int) ($jawaban[$no] ?? 3);
+            $jawabanArray[] = $nilaiRaw;
+
+            $nilaiAkhir = !empty($butir['reverse']) ? (6 - $nilaiRaw) : $nilaiRaw;
+            if (isset($skorPerAspek[$butir['aspek']])) {
+                $skorPerAspek[$butir['aspek']] += $nilaiAkhir;
+            }
+        }
 
         // 4. Simpan ke database
         KuesionerPsikososial::create([
             'siswa_id'      => $siswa->id,
             'semester_id'   => $semesterAktif->id,
-            'skor_motivasi' => $skor['skor_motivasi'],
-            'skor_keluarga' => $skor['skor_keluarga'],
-            'skor_keamanan' => $skor['skor_keamanan'],
+            'skor_motivasi' => $skorPerAspek['motivasi'],
+            'skor_keluarga' => $skorPerAspek['keluarga'],
+            'skor_keamanan' => $skorPerAspek['keamanan'],
             'jawaban_raw'   => $jawabanArray,
             'tanggal_isi'   => now(),
         ]);

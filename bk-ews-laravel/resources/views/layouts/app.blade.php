@@ -198,6 +198,18 @@
                 <i class="bi bi-exclamation-triangle"></i> Pelanggaran
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('bk.master.kategori.*') ? 'active' : '' }}"
+               href="{{ route('bk.master.kategori.index') }}">
+                <i class="bi bi-tags"></i> Kategori Poin
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('bk.kuesioner.*') ? 'active' : '' }}"
+               href="{{ route('bk.kuesioner.index') }}">
+                <i class="bi bi-ui-checks"></i> Kuesioner Siswa
+            </a>
+        </li>
     </ul>
 
     <div class="nav-section">Konseling</div>
@@ -206,6 +218,12 @@
             <a class="nav-link {{ request()->routeIs('bk.tindaklanjut.*') ? 'active' : '' }}"
                href="{{ route('bk.tindaklanjut.index') }}">
                 <i class="bi bi-journal-check"></i> Tindak Lanjut BK
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('bk.whatsapp.log') ? 'active' : '' }}"
+               href="{{ route('bk.whatsapp.log') }}">
+                <i class="bi bi-whatsapp"></i> Log WhatsApp
             </a>
         </li>
     </ul>

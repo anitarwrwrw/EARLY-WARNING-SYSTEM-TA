@@ -74,6 +74,18 @@ class TindakLanjutController extends Controller
     }
 
     /**
+     * Halaman riwayat log pengiriman pesan WhatsApp ke orang tua siswa.
+     */
+    public function logWhatsapp()
+    {
+        $logs = LogWhatsapp::with(['siswa.kelas', 'guruBk'])
+            ->orderByDesc('waktu_kirim')
+            ->paginate(20);
+
+        return view('bk.tindaklanjut.log-wa', compact('logs'));
+    }
+
+    /**
      * Kirim notifikasi WhatsApp ke orang tua siswa via Fonnte.
      */
     public function kirimWhatsapp(Request $request)
