@@ -8,6 +8,14 @@ use Tests\TestCase;
 
 class AdminViewTest extends TestCase
 {
+    public function test_halaman_login_dapat_dirender_tanpa_error(): void
+    {
+        $response = $this->get('/login');
+        $response->assertStatus(200);
+        $response->assertSee('Selamat datang!');
+        $response->assertSee('Isi Kuesioner Siswa');
+    }
+
     public function test_semua_halaman_admin_dapat_dirender_tanpa_error(): void
     {
         $admin = User::where('role', 'admin')->first();
